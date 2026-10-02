@@ -61,7 +61,15 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
       </button>
       <section className="auth-art" aria-label="Fre Haymanot welcome">
         <Link href="/overview" className="auth-brand">
-          <span className="brand-image"><Image src="/icon.png" alt="Fre Haymanot" width={42} height={42} priority /></span>
+          <span className="brand-image">
+            <Image
+              src="/icon.png"
+              alt="Fre Haymanot"
+              width={42}
+              height={42}
+              priority
+            />
+          </span>
           <span>
             <span className="brand-name">Fre Haymanot</span>
             <span className="brand-caption">Administration</span>
@@ -83,7 +91,15 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
       <section className="auth-form-side">
         <div className="auth-form-wrap">
           <Link href="/overview" className="auth-mobile-brand">
-            <span className="brand-image"><Image src="/icon.png" alt="Fre Haymanot" width={42} height={42} priority /></span>
+            <span className="brand-image">
+              <Image
+                src="/icon.png"
+                alt="Fre Haymanot"
+                width={42}
+                height={42}
+                priority
+              />
+            </span>
             <span>
               <span className="brand-name">Fre Haymanot</span>
               <span className="brand-caption">Administration</span>
@@ -135,11 +151,17 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
           ) : (
             <div className="setup-notice" role="status">
               <strong>Clerk is not configured yet</strong>
-              <p>Add the Clerk publishable key and secret key to the frontend environment to enable secure sign-in.</p>
+              <p>
+                Add the Clerk publishable key and secret key to the frontend
+                environment to enable secure sign-in.
+              </p>
             </div>
           )}
           {mode === "forgot" && (
-            <p className="auth-switch">Password recovery is available from the Clerk sign-in panel. <Link href="/sign-in">Return to sign in</Link></p>
+            <p className="auth-switch">
+              Password recovery is available from the Clerk sign-in panel.{" "}
+              <Link href="/sign-in">Return to sign in</Link>
+            </p>
           )}
           <p className="auth-footnote">
             © 2026 Fre Haymanot · Made for the community
