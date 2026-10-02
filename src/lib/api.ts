@@ -23,9 +23,9 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}) {
   });
 
   if (!response.ok) {
-    const result = (await response.json().catch(() => null)) as
-      | { message?: string }
-      | null;
+    const result = (await response.json().catch(() => null)) as {
+      message?: string;
+    } | null;
     throw new Error(result?.message ?? `Request failed (${response.status})`);
   }
 
@@ -58,7 +58,10 @@ export type ContentRecord = {
   updatedAt: string;
 };
 
-export type AnnouncementInput = Pick<Announcement, "title" | "content" | "audience">;
+export type AnnouncementInput = Pick<
+  Announcement,
+  "title" | "content" | "audience"
+>;
 
 type AnnouncementListResponse = {
   announcements: Announcement[];
@@ -97,7 +100,10 @@ export async function deleteFeedback(id: number, token: string) {
   });
 }
 
-export async function createAnnouncement(input: AnnouncementInput, token: string) {
+export async function createAnnouncement(
+  input: AnnouncementInput,
+  token: string,
+) {
   return apiRequest<{ announcement: Announcement }>("/announcements", {
     method: "POST",
     token,

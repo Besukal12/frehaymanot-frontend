@@ -1,12 +1,14 @@
 "use client";
 
-import { ClerkProvider, useAuth } from "@clerk/nextjs";
+import { ClerkProvider, useAuth, useUser } from "@clerk/nextjs";
 import { createContext, useContext } from "react";
 
 type AdminAuthValue = {
   isConfigured: boolean;
   isLoaded: boolean;
   isSignedIn: boolean;
+  displayName: string;
+  email: string;
   getToken: () => Promise<string | null>;
 };
 
@@ -14,6 +16,8 @@ const AdminAuthContext = createContext<AdminAuthValue>({
   isConfigured: false,
   isLoaded: true,
   isSignedIn: false,
+  displayName: "Administrator",
+  email: "",
   getToken: async () => null,
 });
 
@@ -21,6 +25,11 @@ const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function ClerkAuthBridge({ children }: { children: React.ReactNode }) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+  const displayName =
+    user?.fullName ??
+    user?.primaryEmailAddress?.emailAddress ??
+    "Administrator";
 
   return (
     <AdminAuthContext.Provider
@@ -28,6 +37,8 @@ function ClerkAuthBridge({ children }: { children: React.ReactNode }) {
         isConfigured: true,
         isLoaded,
         isSignedIn: Boolean(isSignedIn),
+        displayName,
+        email: user?.primaryEmailAddress?.emailAddress ?? "",
         getToken,
       }}
     >
@@ -44,6 +55,8 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           isConfigured: false,
           isLoaded: true,
           isSignedIn: false,
+          displayName: "Clerk setup required",
+          email: "",
           getToken: async () => null,
         }}
       >
