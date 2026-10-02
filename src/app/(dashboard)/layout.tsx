@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
+import AdminShell from "../../components/AdminShell";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-	return children;
+  return <AdminShell>{children}</AdminShell>;
 }

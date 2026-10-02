@@ -5,10 +5,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Fre Haymanot",
-    template: "%s | Fre Haymanot",
+    default: "Overview | Fre Haymanot Admin",
+    template: "%s | Fre Haymanot Admin",
   },
-  description: "Learn, listen, and grow in faith with Fre Haymanot.",
+  description: "Fre Haymanot content and community administration.",
 };
 
 export default function RootLayout({
