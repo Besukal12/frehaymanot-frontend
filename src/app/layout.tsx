@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { AdminAuthProvider } from "../components/AdminAuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Fre Haymanot Admin",
   },
   description: "Fre Haymanot content and community administration.",
+  icons: { icon: "/icon.png", apple: "/icon.png" },
 };
 
 export default function RootLayout({
@@ -16,7 +18,9 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AdminAuthProvider>{children}</AdminAuthProvider>
+      </body>
     </html>
   );
 }

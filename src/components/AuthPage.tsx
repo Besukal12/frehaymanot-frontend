@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
+import { SignIn as ClerkSignIn, SignUp as ClerkSignUp } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { useAdminAuth } from "./AdminAuthProvider";
 import { Icon } from "./AdminShell";
 
 type AuthMode = "signin" | "signup" | "forgot";
@@ -27,13 +30,14 @@ const copy: Record<AuthMode, { title: string; intro: string; action: string }> =
 
 export default function AuthPage({ mode }: { mode: AuthMode }) {
   const [dark, setDark] = useState(false);
-  const [message, setMessage] = useState("");
+  const { isConfigured } = useAdminAuth();
   const pageCopy = copy[mode];
 
   useEffect(() => {
     const isDark = window.localStorage.getItem("fh-admin-theme") === "dark";
-    setDark(isDark);
     document.documentElement.dataset.theme = isDark ? "dark" : "default";
+    const frame = window.requestAnimationFrame(() => setDark(isDark));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleTheme() {
@@ -43,13 +47,6 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
     window.localStorage.setItem(
       "fh-admin-theme",
       nextDark ? "dark" : "default",
-    );
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage(
-      "This sign-in preview is not connected to an account service yet.",
     );
   }
 
@@ -65,7 +62,15 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
       </button>
       <section className="auth-art" aria-label="Fre Haymanot welcome">
         <Link href="/overview" className="auth-brand">
-          <span className="brand-mark">ፍ</span>
+          <span className="brand-image">
+            <Image
+              src="/icon.png"
+              alt="Fre Haymanot"
+              width={42}
+              height={42}
+              priority
+            />
+          </span>
           <span>
             <span className="brand-name">Fre Haymanot</span>
             <span className="brand-caption">Administration</span>
@@ -87,7 +92,15 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
       <section className="auth-form-side">
         <div className="auth-form-wrap">
           <Link href="/overview" className="auth-mobile-brand">
-            <span className="brand-mark">ፍ</span>
+            <span className="brand-image">
+              <Image
+                src="/icon.png"
+                alt="Fre Haymanot"
+                width={42}
+                height={42}
+                priority
+              />
+            </span>
             <span>
               <span className="brand-name">Fre Haymanot</span>
               <span className="brand-caption">Administration</span>
@@ -96,96 +109,61 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
           <div className="eyebrow">Administrator access</div>
           <h2>{pageCopy.title}</h2>
           <p className="auth-intro">{pageCopy.intro}</p>
-          <form className="auth-form" onSubmit={handleSubmit}>
-            {mode === "signup" && (
-              <div className="field">
-                <label htmlFor="auth-name">Full name</label>
-                <input
-                  id="auth-name"
-                  name="name"
-                  autoComplete="name"
-                  placeholder="Your name"
-                  required
+          {isConfigured ? (
+            <div className="clerk-widget">
+              {mode === "signup" ? (
+                <ClerkSignUp
+                  routing="hash"
+                  signInUrl="/sign-in"
+                  fallbackRedirectUrl="/overview"
+                  appearance={{
+                    variables: {
+                      colorPrimary: "var(--primary)",
+                      colorForeground: "var(--ink)",
+                      colorMutedForeground: "var(--muted)",
+                      colorBackground: "var(--surface)",
+                      colorInput: "var(--background)",
+                      colorInputForeground: "var(--ink)",
+                      borderRadius: "6px",
+                    },
+                    elements: { rootBox: "clerk-root", card: "clerk-card" },
+                  }}
                 />
-              </div>
-            )}
-            <div className="field">
-              <label htmlFor="auth-email">Email address</label>
-              <input
-                id="auth-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                required
-              />
+              ) : (
+                <ClerkSignIn
+                  routing="hash"
+                  signUpUrl="/sign-up"
+                  fallbackRedirectUrl="/overview"
+                  appearance={{
+                    variables: {
+                      colorPrimary: "var(--primary)",
+                      colorForeground: "var(--ink)",
+                      colorMutedForeground: "var(--muted)",
+                      colorBackground: "var(--surface)",
+                      colorInput: "var(--background)",
+                      colorInputForeground: "var(--ink)",
+                      borderRadius: "6px",
+                    },
+                    elements: { rootBox: "clerk-root", card: "clerk-card" },
+                  }}
+                />
+              )}
             </div>
-            {mode !== "forgot" && (
-              <div className="field">
-                <label htmlFor="auth-password">Password</label>
-                <input
-                  id="auth-password"
-                  name="password"
-                  type="password"
-                  autoComplete={
-                    mode === "signup" ? "new-password" : "current-password"
-                  }
-                  placeholder="Enter your password"
-                  minLength={8}
-                  required
-                />
-              </div>
-            )}
-            {mode === "signin" && (
-              <div className="auth-form-options">
-                <label className="check-label">
-                  <input type="checkbox" name="remember" /> Keep me signed in
-                </label>
-                <Link href="/forgot-password">Forgot password?</Link>
-              </div>
-            )}
-            {mode === "signup" && (
-              <div className="field">
-                <label htmlFor="auth-confirm-password">Confirm password</label>
-                <input
-                  id="auth-confirm-password"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Enter your password again"
-                  minLength={8}
-                  required
-                />
-              </div>
-            )}
-            <button className="button button-primary" type="submit">
-              {pageCopy.action}
-              <Icon name="arrow" />
-            </button>
-            {message && (
-              <p className="auth-intro" role="status">
-                {message}
+          ) : (
+            <div className="setup-notice" role="status">
+              <strong>Clerk is not configured yet</strong>
+              <p>
+                Add the Clerk publishable key and secret key to the frontend
+                environment to enable secure sign-in.
               </p>
-            )}
-          </form>
-          <div className="auth-separator">SECURE ADMINISTRATOR PORTAL</div>
-          <p className="auth-switch">
-            {mode === "signin" ? (
-              <>
-                New to the admin portal?{" "}
-                <Link href="/sign-up">Request an account</Link>
-              </>
-            ) : mode === "signup" ? (
-              <>
-                Already have access? <Link href="/sign-in">Sign in</Link>
-              </>
-            ) : (
-              <>
-                Remembered your password?{" "}
-                <Link href="/sign-in">Return to sign in</Link>
-              </>
-            )}
-          </p>
+            </div>
+          )}
+          {mode === "forgot" && (
+            <p className="auth-switch">
+              Password recovery is available from the Clerk sign-in panel.{" "}
+              <Link href="/sign-in">Return to sign in</Link>
+            </p>
+          )}
           <p className="auth-footnote">
             © 2026 Fre Haymanot · Made for the community
           </p>

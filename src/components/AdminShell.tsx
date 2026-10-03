@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { UserButton } from "@clerk/nextjs";
+import { useAdminAuth } from "./AdminAuthProvider";
 
 const navigation = [
   { label: "Overview", href: "/overview", icon: "grid" },
@@ -111,14 +114,22 @@ export default function AdminShell({
   const pathname = usePathname();
   const [dark, setDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isConfigured, isSignedIn, displayName, email } = useAdminAuth();
+  const initials = displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
   const current =
     navigation.find((item) => item.href === pathname) ?? navigation[0];
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("fh-admin-theme");
     const shouldUseDark = storedTheme === "dark";
-    setDark(shouldUseDark);
     document.documentElement.dataset.theme = shouldUseDark ? "dark" : "default";
+    const frame = window.requestAnimationFrame(() => setDark(shouldUseDark));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleTheme() {
@@ -144,7 +155,15 @@ export default function AdminShell({
           className="brand-lockup"
           onClick={() => setMenuOpen(false)}
         >
-          <span className="brand-mark">ፍ</span>
+          <span className="brand-image">
+            <Image
+              src="/icon.png"
+              alt="Fre Haymanot"
+              width={42}
+              height={42}
+              priority
+            />
+          </span>
           <span>
             <span className="brand-name">Fre Haymanot</span>
             <span className="brand-caption">Administration</span>
@@ -167,21 +186,33 @@ export default function AdminShell({
           ))}
         </nav>
         <div className="sidebar-note">
-          <strong>Keep the community close</strong>
-          <p>Share a thoughtful update with listeners and learners.</p>
-          <Link href="/announcements">
-            Create an announcement <Icon name="arrow" />
+          <strong>
+            {isConfigured
+              ? "Keep the community close"
+              : "Connect administrator access"}
+          </strong>
+          <p>
+            {isConfigured
+              ? "Share a thoughtful update with listeners and learners."
+              : "Add Clerk keys to enable sign-in and protected management."}
+          </p>
+          <Link href={isConfigured ? "/announcements" : "/sign-in"}>
+            {isConfigured ? "Create an announcement" : "Open sign-in"}{" "}
+            <Icon name="arrow" />
           </Link>
         </div>
         <div className="sidebar-bottom">
-          <span className="avatar">AB</span>
+          {isConfigured && isSignedIn ? (
+            <UserButton />
+          ) : (
+            <span className="avatar">{initials || "AD"}</span>
+          )}
           <span className="account-copy">
-            <strong>Abebe Bekele</strong>
-            <span>Administrator</span>
+            <strong>{displayName}</strong>
+            <span>
+              {email || (isConfigured ? "Not signed in" : "Setup needed")}
+            </span>
           </span>
-          <button className="row-action" aria-label="Account options">
-            <span aria-hidden="true">···</span>
-          </button>
         </div>
       </aside>
 
@@ -213,10 +244,16 @@ export default function AdminShell({
               <span className="notification-dot" />
             </button>
             <div className="topbar-user">
-              <span className="avatar">AB</span>
+              {isConfigured && isSignedIn ? (
+                <UserButton />
+              ) : (
+                <span className="avatar">{initials || "AD"}</span>
+              )}
               <span className="account-copy">
-                <strong>Abebe Bekele</strong>
-                <span>Admin</span>
+                <strong>{displayName}</strong>
+                <span>
+                  {email || (isConfigured ? "Not signed in" : "Setup needed")}
+                </span>
               </span>
             </div>
           </div>
