@@ -35,8 +35,9 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
 
   useEffect(() => {
     const isDark = window.localStorage.getItem("fh-admin-theme") === "dark";
-    setDark(isDark);
     document.documentElement.dataset.theme = isDark ? "dark" : "default";
+    const frame = window.requestAnimationFrame(() => setDark(isDark));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleTheme() {
@@ -118,11 +119,11 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
                   appearance={{
                     variables: {
                       colorPrimary: "var(--primary)",
-                      colorText: "var(--ink)",
-                      colorTextSecondary: "var(--muted)",
+                      colorForeground: "var(--ink)",
+                      colorMutedForeground: "var(--muted)",
                       colorBackground: "var(--surface)",
-                      colorInputBackground: "var(--background)",
-                      colorInputText: "var(--ink)",
+                      colorInput: "var(--background)",
+                      colorInputForeground: "var(--ink)",
                       borderRadius: "6px",
                     },
                     elements: { rootBox: "clerk-root", card: "clerk-card" },
@@ -136,11 +137,11 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
                   appearance={{
                     variables: {
                       colorPrimary: "var(--primary)",
-                      colorText: "var(--ink)",
-                      colorTextSecondary: "var(--muted)",
+                      colorForeground: "var(--ink)",
+                      colorMutedForeground: "var(--muted)",
                       colorBackground: "var(--surface)",
-                      colorInputBackground: "var(--background)",
-                      colorInputText: "var(--ink)",
+                      colorInput: "var(--background)",
+                      colorInputForeground: "var(--ink)",
                       borderRadius: "6px",
                     },
                     elements: { rootBox: "clerk-root", card: "clerk-card" },

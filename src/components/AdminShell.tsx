@@ -127,8 +127,9 @@ export default function AdminShell({
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("fh-admin-theme");
     const shouldUseDark = storedTheme === "dark";
-    setDark(shouldUseDark);
     document.documentElement.dataset.theme = shouldUseDark ? "dark" : "default";
+    const frame = window.requestAnimationFrame(() => setDark(shouldUseDark));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleTheme() {
@@ -154,7 +155,15 @@ export default function AdminShell({
           className="brand-lockup"
           onClick={() => setMenuOpen(false)}
         >
-          <span className="brand-image"><Image src="/icon.png" alt="Fre Haymanot" width={42} height={42} priority /></span>
+          <span className="brand-image">
+            <Image
+              src="/icon.png"
+              alt="Fre Haymanot"
+              width={42}
+              height={42}
+              priority
+            />
+          </span>
           <span>
             <span className="brand-name">Fre Haymanot</span>
             <span className="brand-caption">Administration</span>
@@ -177,17 +186,32 @@ export default function AdminShell({
           ))}
         </nav>
         <div className="sidebar-note">
-          <strong>{isConfigured ? "Keep the community close" : "Connect administrator access"}</strong>
-          <p>{isConfigured ? "Share a thoughtful update with listeners and learners." : "Add Clerk keys to enable sign-in and protected management."}</p>
+          <strong>
+            {isConfigured
+              ? "Keep the community close"
+              : "Connect administrator access"}
+          </strong>
+          <p>
+            {isConfigured
+              ? "Share a thoughtful update with listeners and learners."
+              : "Add Clerk keys to enable sign-in and protected management."}
+          </p>
           <Link href={isConfigured ? "/announcements" : "/sign-in"}>
-            {isConfigured ? "Create an announcement" : "Open sign-in"} <Icon name="arrow" />
+            {isConfigured ? "Create an announcement" : "Open sign-in"}{" "}
+            <Icon name="arrow" />
           </Link>
         </div>
         <div className="sidebar-bottom">
-          {isConfigured && isSignedIn ? <UserButton /> : <span className="avatar">{initials || "AD"}</span>}
+          {isConfigured && isSignedIn ? (
+            <UserButton />
+          ) : (
+            <span className="avatar">{initials || "AD"}</span>
+          )}
           <span className="account-copy">
             <strong>{displayName}</strong>
-            <span>{email || (isConfigured ? "Not signed in" : "Setup needed")}</span>
+            <span>
+              {email || (isConfigured ? "Not signed in" : "Setup needed")}
+            </span>
           </span>
         </div>
       </aside>
@@ -220,10 +244,16 @@ export default function AdminShell({
               <span className="notification-dot" />
             </button>
             <div className="topbar-user">
-              {isConfigured && isSignedIn ? <UserButton /> : <span className="avatar">{initials || "AD"}</span>}
+              {isConfigured && isSignedIn ? (
+                <UserButton />
+              ) : (
+                <span className="avatar">{initials || "AD"}</span>
+              )}
               <span className="account-copy">
                 <strong>{displayName}</strong>
-                <span>{email || (isConfigured ? "Not signed in" : "Setup needed")}</span>
+                <span>
+                  {email || (isConfigured ? "Not signed in" : "Setup needed")}
+                </span>
               </span>
             </div>
           </div>

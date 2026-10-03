@@ -60,7 +60,7 @@ export type ContentRecord = {
 
 export type AnnouncementInput = Pick<
   Announcement,
-  "title" | "content" | "audience"
+  "title" | "slug" | "content" | "audience"
 >;
 
 type AnnouncementListResponse = {
@@ -87,10 +87,22 @@ export async function fetchAnnouncements(token?: string | null) {
 }
 
 export async function fetchFeedback(token: string) {
-  return apiRequest<{ feedbacks: Feedback[]; pagination: { total: number } }>(
-    "/feedback?page=1&limit=100&sort=desc",
-    { token },
-  );
+  const feedbacks: Feedback[] = [];
+  let page = 1;
+  let total = 0;
+
+  do {
+    const response = await apiRequest<{
+      feedbacks: Feedback[];
+      pagination: { total: number };
+    }>(`/feedback?page=${page}&limit=100&sort=desc`, { token });
+    feedbacks.push(...response.feedbacks);
+    total = response.pagination.total;
+    page += 1;
+    if (response.feedbacks.length === 0) break;
+  } while (feedbacks.length < total);
+
+  return { feedbacks, pagination: { total } };
 }
 
 export async function deleteFeedback(id: number, token: string) {

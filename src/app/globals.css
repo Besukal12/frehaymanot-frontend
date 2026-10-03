@@ -1574,7 +1574,18 @@ a {
   width: 100%;
   height: 70%;
   border-radius: 6px;
-  clip-path: polygon(0 80%, 15% 65%, 29% 71%, 44% 40%, 57% 52%, 70% 23%, 84% 35%, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(
+    0 80%,
+    15% 65%,
+    29% 71%,
+    44% 40%,
+    57% 52%,
+    70% 23%,
+    84% 35%,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
 }
 .skeleton-traffic {
   min-height: 300px;
@@ -1621,8 +1632,12 @@ a {
   clip-path: inset(50%);
 }
 @keyframes skeleton-pulse {
-  from { opacity: 0.48; }
-  to { opacity: 0.95; }
+  from {
+    opacity: 0.48;
+  }
+  to {
+    opacity: 0.95;
+  }
 }
 @media (max-width: 560px) {
   .skeleton-heading {
