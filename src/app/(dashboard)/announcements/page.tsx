@@ -391,7 +391,6 @@ export default function Announcements() {
                 defaultValue={editing?.slug ?? ""}
                 maxLength={255}
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                required
               />
               <span className="panel-subtitle">
                 Use lowercase letters, numbers, and hyphens.
