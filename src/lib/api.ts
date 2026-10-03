@@ -115,11 +115,19 @@ export async function deleteFeedback(id: number, token: string) {
 export async function createAnnouncement(
   input: AnnouncementInput,
   token: string,
+  thumbnail?: File | null,
 ) {
+  const body = new FormData();
+  body.set("title", input.title);
+  body.set("slug", input.slug);
+  body.set("content", input.content);
+  body.set("audience", input.audience);
+  if (thumbnail) body.set("thumbnail", thumbnail);
+
   return apiRequest<{ announcement: Announcement }>("/announcements", {
     method: "POST",
     token,
-    body: JSON.stringify(input),
+    body,
   });
 }
 
@@ -127,11 +135,19 @@ export async function updateAnnouncement(
   id: number,
   input: AnnouncementInput,
   token: string,
+  thumbnail?: File | null,
 ) {
+  const body = new FormData();
+  body.set("title", input.title);
+  body.set("slug", input.slug);
+  body.set("content", input.content);
+  body.set("audience", input.audience);
+  if (thumbnail) body.set("thumbnail", thumbnail);
+
   return apiRequest<{ announcement: Announcement }>(`/announcements/${id}`, {
     method: "PATCH",
     token,
-    body: JSON.stringify(input),
+    body,
   });
 }
 
