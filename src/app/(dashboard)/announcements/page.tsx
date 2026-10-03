@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { useAdminAuth } from "../../../components/AdminAuthProvider";
 import { TableSkeleton } from "../../../components/LoadingSkeleton";
@@ -42,6 +48,17 @@ export default function Announcements() {
   const [audience, setAudience] = useState("All audiences");
   const [editing, setEditing] = useState<Announcement | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
+  useEffect(
+    () => () => {
+      if (thumbnailPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(thumbnailPreview);
+      }
+    },
+    [thumbnailPreview],
+  );
 
   const loadAnnouncements = useCallback(async () => {
     setLoading(true);
@@ -82,18 +99,24 @@ export default function Announcements() {
       const token = await getToken();
       if (!token) throw new Error("Sign in before managing announcements.");
       if (editing) {
-        const response = await updateAnnouncement(editing.id, input, token);
+        const response = await updateAnnouncement(
+          editing.id,
+          input,
+          token,
+          thumbnailFile,
+        );
         setAnnouncements((current) =>
           current.map((item) =>
             item.id === editing.id ? response.announcement : item,
           ),
         );
       } else {
-        const response = await createAnnouncement(input, token);
+        const response = await createAnnouncement(input, token, thumbnailFile);
         setAnnouncements((current) => [response.announcement, ...current]);
       }
       setModalOpen(false);
       setEditing(null);
+      setThumbnailFile(null);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Unable to save announcement.",
@@ -135,12 +158,32 @@ export default function Announcements() {
 
   function openCreate() {
     setEditing(null);
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
     setModalOpen(true);
   }
 
   function openEdit(item: Announcement) {
     setEditing(item);
+    setThumbnailFile(null);
+    setThumbnailPreview(item.thumbnailUrl);
     setModalOpen(true);
+  }
+
+  function handleThumbnailChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0] ?? null;
+    event.currentTarget.value = "";
+
+    if (file && file.size > 10 * 1024 * 1024) {
+      setError("Image must be 10 MB or smaller.");
+      return;
+    }
+
+    setError("");
+    setThumbnailFile(file);
+    setThumbnailPreview(
+      file ? URL.createObjectURL(file) : editing?.thumbnailUrl ?? null,
+    );
   }
 
   return (
@@ -222,6 +265,7 @@ export default function Announcements() {
             <table className="data-table">
               <thead>
                 <tr>
+                  <th>Image</th>
                   <th>Announcement</th>
                   <th>Audience</th>
                   <th>Posted</th>
@@ -232,6 +276,20 @@ export default function Announcements() {
               <tbody>
                 {visibleAnnouncements.map((item) => (
                   <tr key={item.id}>
+                    <td>
+                      {item.thumbnailUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          className="announcement-thumbnail"
+                          src={item.thumbnailUrl}
+                          alt=""
+                        />
+                      ) : (
+                        <span className="announcement-thumbnail-empty">
+                          No image
+                        </span>
+                      )}
+                    </td>
                     <td>
                       <span className="table-primary">{item.title}</span>
                       <span className="table-secondary">{item.content}</span>
@@ -261,7 +319,7 @@ export default function Announcements() {
                 ))}
                 {!visibleAnnouncements.length && (
                   <tr>
-                    <td colSpan={5}>
+                    <td colSpan={6}>
                       <div className="empty-results">
                         {search
                           ? "No announcements match your filters."
@@ -352,6 +410,24 @@ export default function Announcements() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="field">
+              <label htmlFor="announcement-thumbnail">Announcement image</label>
+              <input
+                id="announcement-thumbnail"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleThumbnailChange}
+              />
+              <span className="panel-subtitle">
+                Optional. JPEG, PNG, WebP, or GIF; up to 10 MB.
+              </span>
+              {thumbnailPreview && (
+                <div className="announcement-image-preview">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={thumbnailPreview} alt="Announcement image preview" />
+                </div>
+              )}
             </div>
             <div className="modal-actions">
               <button
